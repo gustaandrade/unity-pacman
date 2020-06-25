@@ -3,7 +3,16 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Wall
+  - Pellet
+  - Energizer
+  - Intersection
+  - OutOfBound
+  - Empty
+  - GhostHouse
+  - Tunnel
+  - Fruit
   layers:
   - Default
   - TransparentFX
