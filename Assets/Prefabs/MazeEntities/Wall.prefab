@@ -17,6 +17,12 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Wall
       objectReference: {fileID: 0}
+    - target: {fileID: 7422078072969090232, guid: 67b861c0e7e615b45895a8fadf88563c,
+        type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 7174288486110832750, guid: 0000000000000000d000000000000000,
+        type: 0}
     - target: {fileID: 7422078072969090239, guid: 67b861c0e7e615b45895a8fadf88563c,
         type: 3}
       propertyPath: m_LocalPosition.x
