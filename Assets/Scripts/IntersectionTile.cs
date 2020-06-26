@@ -1,0 +1,35 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class IntersectionTile : MonoBehaviour
+{
+    public IntersectionTile UpNeighbor;
+    public IntersectionTile LeftNeighbor;
+    public IntersectionTile DownNeighbor;
+    public IntersectionTile RightNeighbor;
+
+    public Vector3 UpDirection;
+    public Vector3 LeftDirection;
+    public Vector3 DownDirection;
+    public Vector3 RightDirection;
+
+    private void Awake()
+    {
+        UpDirection = UpNeighbor != null 
+            ? (UpNeighbor.transform.localPosition - transform.localPosition).normalized
+            : Vector3.zero;
+
+        LeftDirection = LeftNeighbor != null
+            ? (LeftNeighbor.transform.localPosition - transform.localPosition).normalized
+            : Vector3.zero;
+
+        DownDirection = DownNeighbor != null
+            ? (DownNeighbor.transform.localPosition - transform.localPosition).normalized
+            : Vector3.zero;
+
+        RightDirection = RightNeighbor != null
+            ? (RightNeighbor.transform.localPosition - transform.localPosition).normalized
+            : Vector3.zero;
+    }
+}

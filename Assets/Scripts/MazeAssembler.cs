@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class MazeAssembler : MonoBehaviour
 {
+    public static MazeAssembler Instance;
+
     private MazeConfiguration _mazeConfiguration;
 
     [Space(10), Header("Parents")]
@@ -30,30 +32,33 @@ public class MazeAssembler : MonoBehaviour
     public GameObject TunnelPrefab;
     public GameObject FruitPrefab;
 
-    private List<MazeTile> _mazeTiles;
+    public List<MazeTile> MazeTiles;
 
     private void Awake()
     {
+        if (Instance == null)
+            Instance = this;
+
         _mazeConfiguration = Resources.Load<MazeConfiguration>("MazeConfiguration");
 
         foreach (var wal in _mazeConfiguration.Walls) BuildMaze(wal, MazeTileType.Wall);
         foreach (var pel in _mazeConfiguration.Pellets) BuildMaze(pel, MazeTileType.Pellet);
         foreach (var en in _mazeConfiguration.Energizers) BuildMaze(en, MazeTileType.Energizer);
-        foreach (var inter in _mazeConfiguration.Intersections) BuildMaze(inter, MazeTileType.Intersection);
+        //foreach (var inter in _mazeConfiguration.Intersections) BuildMaze(inter, MazeTileType.Intersection);
         foreach (var oob in _mazeConfiguration.OutOfBounds) BuildMaze(oob, MazeTileType.OutOfBound);
         foreach (var emp in _mazeConfiguration.Empties) BuildMaze(emp, MazeTileType.Empty);
         foreach (var gh in _mazeConfiguration.GhostHouse) BuildMaze(gh, MazeTileType.GhostHouse);
         foreach (var tun in _mazeConfiguration.Tunnels) BuildMaze(tun, MazeTileType.Tunnel);
         foreach (var fr in _mazeConfiguration.Fruit) BuildMaze(fr, MazeTileType.Fruit);
 
-        _mazeTiles = transform.GetComponentsInChildren<MazeTile>().ToList();
+        MazeTiles = transform.GetComponentsInChildren<MazeTile>().ToList();
 
-        foreach (var tile in _mazeTiles)
+        foreach (var tile in MazeTiles)
         {
-            var upNeighbor = _mazeTiles.FirstOrDefault(mt => mt.TileX == tile.TileX && mt.TileY == tile.TileY + 1);
-            var leftNeighbor = _mazeTiles.FirstOrDefault(mt => mt.TileX == tile.TileX - 1 && mt.TileY == tile.TileY);
-            var downNeighbor = _mazeTiles.FirstOrDefault(mt => mt.TileX == tile.TileX && mt.TileY == tile.TileY - 1);
-            var rightNeighbor = _mazeTiles.FirstOrDefault(mt => mt.TileX == tile.TileX + 1 && mt.TileY == tile.TileY);
+            var upNeighbor = MazeTiles.FirstOrDefault(mt => mt.TileX == tile.TileX && mt.TileY == tile.TileY + 1);
+            var leftNeighbor = MazeTiles.FirstOrDefault(mt => mt.TileX == tile.TileX - 1 && mt.TileY == tile.TileY);
+            var downNeighbor = MazeTiles.FirstOrDefault(mt => mt.TileX == tile.TileX && mt.TileY == tile.TileY - 1);
+            var rightNeighbor = MazeTiles.FirstOrDefault(mt => mt.TileX == tile.TileX + 1 && mt.TileY == tile.TileY);
 
             tile.SetNeighbors(upNeighbor, leftNeighbor, downNeighbor, rightNeighbor);
         }
