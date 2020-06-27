@@ -16,6 +16,10 @@ public class IntersectionTile : MonoBehaviour
     public Vector3 DownDirection;
     public Vector3 RightDirection;
 
+    [Space(10), Header("Neighbor Collections")]
+    public IntersectionTile[] Neighbors;
+    public Vector3[] NeighborDirections;
+
     [Space(10), Header("Portal Configuration")]
     public bool IsPortal;
     public IntersectionTile OppositePortal;
@@ -37,5 +41,8 @@ public class IntersectionTile : MonoBehaviour
         RightDirection = RightNeighbor != null
             ? (RightNeighbor.transform.localPosition - transform.localPosition).normalized
             : Vector3.zero;
+
+        Neighbors = new[] { UpNeighbor, LeftNeighbor, DownNeighbor, RightNeighbor };
+        NeighborDirections = new[] { UpDirection, LeftDirection, DownDirection, RightDirection };
     }
 }

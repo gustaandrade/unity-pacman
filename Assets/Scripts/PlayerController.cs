@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Space(10), Header("Variables")]
     public float Speed;
     
     private Animator _playerAnimator;
@@ -78,7 +79,6 @@ public class PlayerController : MonoBehaviour
             if (OvershotTarget())
             {
                 _currentIntersectionTile = _targetIntersectionTile;
-
                 transform.localPosition = _currentIntersectionTile.transform.localPosition;
 
                 if (_currentIntersectionTile.IsPortal)
