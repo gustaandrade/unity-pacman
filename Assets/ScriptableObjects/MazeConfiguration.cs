@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Maze Configuration", menuName = "ScriptableObjects/MazeConfiguration", order = 1)]
+[CreateAssetMenu(fileName = "MazeConfiguration", menuName = "ScriptableObjects/MazeConfiguration", order = 1)]
 public class MazeConfiguration : ScriptableObject
 {
     public Vector2[] Walls;
