@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "LevelsConfiguration", menuName = "ScriptableObjects/LevelsConfiguration", order = 1)]
 public class LevelsConfiguration : ScriptableObject
 {
-    public Level[] Levels = new Level[20];
+    public Level[] Levels = new Level[19];
 }
 
 [Serializable]

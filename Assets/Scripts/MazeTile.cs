@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class MazeTile : MonoBehaviour
 {
@@ -16,9 +17,13 @@ public class MazeTile : MonoBehaviour
     public MazeTile DownNeighbor;
     public MazeTile RightNeighbor;
 
+    public UnityEvent OnPlayerInteract = new UnityEvent();
+
     private void Awake()
     {
         _mazeTileType = (MazeTileType)Enum.Parse(typeof(MazeTileType), gameObject.tag);
+
+        OnPlayerInteract.AddListener(ConsumePellet);
     }
 
     public void SetTilePosition(float posX, float posY)
@@ -33,6 +38,34 @@ public class MazeTile : MonoBehaviour
         LeftNeighbor = left;
         DownNeighbor = down;
         RightNeighbor = right;
+    }
+
+    private void ConsumePellet()
+    {
+        if (_mazeTileType == MazeTileType.Pellet || _mazeTileType == MazeTileType.Energizer)
+        {
+            SoundController.Instance.PlayPelletEatenSFX();
+            gameObject.SetActive(false);
+
+            switch (_mazeTileType)
+            {
+                case MazeTileType.Pellet:
+                    ScoreController.Instance.SetPelletsConsumed();
+                    ScoreController.Instance.SetLevelScore(10);
+                    break;
+                
+                case MazeTileType.Energizer:
+                    ScoreController.Instance.SetEnergizersConsumed();
+                    ScoreController.Instance.SetLevelScore(50);
+                    SoundController.Instance.PlayEnergizerMusic();
+                    break;
+
+                default: 
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            OnPlayerInteract.RemoveListener(ConsumePellet);
+        }
     }
 }
 

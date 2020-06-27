@@ -33,6 +33,10 @@ public class MazeAssembler : MonoBehaviour
     public GameObject FruitPrefab;
 
     public List<MazeTile> MazeTiles;
+    public List<MazeTile> AllPelletTiles;
+
+    private List<MazeTile> _pelletTiles;
+    private List<MazeTile> _energizerTiles;
 
     private void Awake()
     {
@@ -51,7 +55,11 @@ public class MazeAssembler : MonoBehaviour
         foreach (var tun in _mazeConfiguration.Tunnels) BuildMaze(tun, MazeTileType.Tunnel);
         foreach (var fr in _mazeConfiguration.Fruit) BuildMaze(fr, MazeTileType.Fruit);
 
+        _pelletTiles = PelletsParent.GetComponentsInChildren<MazeTile>().ToList();
+        _energizerTiles = EnergizersParent.GetComponentsInChildren<MazeTile>().ToList();
+
         MazeTiles = transform.GetComponentsInChildren<MazeTile>().ToList();
+        AllPelletTiles = _pelletTiles.Concat(_energizerTiles).ToList();
 
         foreach (var tile in MazeTiles)
         {

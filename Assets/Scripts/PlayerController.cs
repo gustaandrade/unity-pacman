@@ -8,12 +8,14 @@ public class PlayerController : MonoBehaviour
     
     private Animator _playerAnimator;
     
-    private MoveDirection _moveDirection;
-    private MoveDirection _nextDirection;
+    private MoveDirection _currentMoveDirection;
+    private MoveDirection _nextMoveDirection;
 
-    private IntersectionTile _currentTile;
-    private IntersectionTile _previousTile;
-    private IntersectionTile _targetTile;
+    private IntersectionTile _currentIntersectionTile;
+    private IntersectionTile _previousIntersectionTile;
+    private IntersectionTile _targetIntersectionTile;
+
+    private MazeTile _currentMazeTile;
 
     private void Awake()
     {
@@ -21,10 +23,10 @@ public class PlayerController : MonoBehaviour
 
         var nextTile = GetIntersection(transform.localPosition);
         if (nextTile != null)
-            _currentTile = nextTile;
+            _currentIntersectionTile = nextTile;
 
-        _moveDirection = MoveDirection.Left;
-        ChangePosition(_moveDirection);
+        _currentMoveDirection = MoveDirection.Left;
+        ChangePosition(_currentMoveDirection);
     }
 
     private void Update()
@@ -39,50 +41,67 @@ public class PlayerController : MonoBehaviour
             ChangePosition(MoveDirection.Right);
 
         Move();
+        UpdateSprite();
+        ConsumePellet();
     }
 
     private void ChangePosition(MoveDirection direction)
     {
-        if (direction != _moveDirection)
-            _nextDirection = direction;
+        if (direction != _currentMoveDirection)
+            _nextMoveDirection = direction;
 
-        if (_currentTile != null)
+        if (_currentIntersectionTile != null)
         {
             var nextTile = MoveToNeighbor(direction);
             if (nextTile != null)
             {
-                _moveDirection = direction;
-                _targetTile = nextTile;
-                _previousTile = _currentTile;
-                _currentTile = null;
+                _currentMoveDirection = direction;
+                _targetIntersectionTile = nextTile;
+                _previousIntersectionTile = _currentIntersectionTile;
+                _currentIntersectionTile = null;
             }
         }
     }
 
     private void Move()
     {
-        if (_targetTile != _currentTile && _targetTile != null)
+        if (_targetIntersectionTile != _currentIntersectionTile && _targetIntersectionTile != null)
         {
+            if (_nextMoveDirection == GetOppositeDirection(_currentMoveDirection))
+            {
+                _currentMoveDirection = GetOppositeDirection(_currentMoveDirection);
+                var tempTile = _targetIntersectionTile;
+                _targetIntersectionTile = _previousIntersectionTile;
+                _previousIntersectionTile = tempTile;
+            }
+
             if (OvershotTarget())
             {
-                _currentTile = _targetTile;
+                _currentIntersectionTile = _targetIntersectionTile;
 
-                transform.localPosition = _currentTile.transform.localPosition;
+                transform.localPosition = _currentIntersectionTile.transform.localPosition;
 
-                var nextTile = MoveToNeighbor(_nextDirection);
+                if (_currentIntersectionTile.IsPortal)
+                {
+                    transform.localPosition = _currentIntersectionTile.OppositePortal.transform.localPosition;
+                    _currentIntersectionTile = _currentIntersectionTile.OppositePortal;
+                }
+
+                var nextTile = MoveToNeighbor(_nextMoveDirection);
+
                 if (nextTile != null)
-                    _moveDirection = _nextDirection;
+                    _currentMoveDirection = _nextMoveDirection;
                 if (nextTile == null)
-                    nextTile = MoveToNeighbor(_moveDirection);
+                    nextTile = MoveToNeighbor(_currentMoveDirection);
                 if (nextTile != null)
                 {
-                    _targetTile = nextTile;
-                    _previousTile = _currentTile;
-                    _currentTile = null;
+                    _targetIntersectionTile = nextTile;
+                    _previousIntersectionTile = _currentIntersectionTile;
+                    _currentIntersectionTile = null;
                 }
                 else
                 {
-                    _moveDirection = MoveDirection.Stale;
+                    _currentMoveDirection = MoveDirection.Stale;
                     _playerAnimator.speed = 0f;
                 }
             }
@@ -92,24 +111,22 @@ public class PlayerController : MonoBehaviour
                 _playerAnimator.speed = 1f;
             }
         }
-
-        UpdateSprite();
     }
 
-    private void MoveToNextTile()
-    {
-        var nextTile = MoveToNeighbor(_moveDirection);
-        if (nextTile != null)
-        {
-            transform.localPosition = nextTile.transform.localPosition;
-            UpdateSprite();
-            _currentTile = nextTile;
-        }
-    }
+    //private void MoveToNextTile()
+    //{
+    //    var nextTile = MoveToNeighbor(_currentMoveDirection);
+    //    if (nextTile != null)
+    //    {
+    //        transform.localPosition = nextTile.transform.localPosition;
+    //        UpdateSprite();
+    //        _currentIntersectionTile = nextTile;
+    //    }
+    //}
 
     private void UpdateSprite()
     {
-        switch (_moveDirection)
+        switch (_currentMoveDirection)
         {
             case MoveDirection.Up:
                 transform.localScale = new Vector3(1.5f, 1.5f, 1f);
@@ -138,13 +155,25 @@ public class PlayerController : MonoBehaviour
 
     private Vector3 GetVectorDirection()
     {
-        switch (_moveDirection)
+        switch (_currentMoveDirection)
         {
             case MoveDirection.Up: return Vector3.up;
             case MoveDirection.Left: return Vector3.left;
             case MoveDirection.Down: return Vector3.down;
             case MoveDirection.Right: return Vector3.right;
             default: return Vector3.zero;
+        }
+    }
+
+    private MoveDirection GetOppositeDirection(MoveDirection direction)
+    {
+        switch (direction)
+        {
+            case MoveDirection.Up: return MoveDirection.Down;
+            case MoveDirection.Left: return MoveDirection.Right;
+            case MoveDirection.Down: return MoveDirection.Up;
+            case MoveDirection.Right: return MoveDirection.Left;
+            default: return MoveDirection.Stale;
         }
     }
 
@@ -156,21 +185,39 @@ public class PlayerController : MonoBehaviour
         return mazeTile != null ? mazeTile.GetComponent<IntersectionTile>() : null;
     }
 
+    private MazeTile GetPelletAtLocation(Vector3 location)
+    {
+        var mazeTile = MazeAssembler.Instance.AllPelletTiles.FirstOrDefault
+            (m => m.TileX == (int)location.x && m.TileY == (int)location.y);
+
+        return mazeTile;
+    }
+
+    private void ConsumePellet()
+    {
+        var actualTile = GetPelletAtLocation(transform.localPosition);
+        if (_currentMazeTile != actualTile && actualTile != null)
+        {
+            _currentMazeTile = actualTile;
+            _currentMazeTile.OnPlayerInteract.Invoke();
+        }
+    }
+
     private IntersectionTile MoveToNeighbor(MoveDirection direction)
     {
         switch (direction)
         {
-            case MoveDirection.Up: return _currentTile.UpNeighbor;
-            case MoveDirection.Left: return _currentTile.LeftNeighbor;
-            case MoveDirection.Down: return _currentTile.DownNeighbor;
-            case MoveDirection.Right: return _currentTile.RightNeighbor;
+            case MoveDirection.Up: return _currentIntersectionTile.UpNeighbor;
+            case MoveDirection.Left: return _currentIntersectionTile.LeftNeighbor;
+            case MoveDirection.Down: return _currentIntersectionTile.DownNeighbor;
+            case MoveDirection.Right: return _currentIntersectionTile.RightNeighbor;
             default: return null;
         }
     }
 
     private bool OvershotTarget()
     {
-        var tileToTarget = DistanceFromTile(_targetTile.transform.localPosition);
+        var tileToTarget = DistanceFromTile(_targetIntersectionTile.transform.localPosition);
         var tileToSelf = DistanceFromTile(transform.localPosition);
 
         return tileToSelf > tileToTarget;
@@ -178,7 +225,7 @@ public class PlayerController : MonoBehaviour
 
     private float DistanceFromTile(Vector3 target)
     {
-        var distance = target - _previousTile.transform.localPosition;
+        var distance = target - _previousIntersectionTile.transform.localPosition;
         return distance.sqrMagnitude;
     }
 }

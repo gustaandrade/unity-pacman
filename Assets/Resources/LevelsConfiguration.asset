@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: bc9a50e8851fd254c9c7c17194daec08, type: 3}
   m_Name: LevelsConfiguration
-  m_EditorClassIdentifier: Assembly-CSharp::LevelsConfiguration
+  m_EditorClassIdentifier: 
   Levels:
   - LevelNumber: 1
     LevelFruits: 00000000080000000800000008000000080000000800000008000000

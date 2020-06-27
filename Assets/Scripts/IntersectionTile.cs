@@ -4,15 +4,21 @@ using UnityEngine;
 
 public class IntersectionTile : MonoBehaviour
 {
+    [Space(10), Header("Neighbors")]
     public IntersectionTile UpNeighbor;
     public IntersectionTile LeftNeighbor;
     public IntersectionTile DownNeighbor;
     public IntersectionTile RightNeighbor;
-
+    
+    [Space(10), Header("Neighbor Directions")]
     public Vector3 UpDirection;
     public Vector3 LeftDirection;
     public Vector3 DownDirection;
     public Vector3 RightDirection;
+
+    [Space(10), Header("Portal Configuration")]
+    public bool IsPortal;
+    public IntersectionTile OppositePortal;
 
     private void Awake()
     {
