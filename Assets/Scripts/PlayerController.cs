@@ -4,58 +4,101 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float Speed = 5f;
+    public float Speed;
+    
+    private Animator _playerAnimator;
     
     private MoveDirection _moveDirection;
-    private Animator _playerAnimator;
+    private MoveDirection _nextDirection;
 
     private IntersectionTile _currentTile;
+    private IntersectionTile _previousTile;
+    private IntersectionTile _targetTile;
 
     private void Awake()
     {
-        _moveDirection = MoveDirection.Stale;
-
         _playerAnimator = GetComponentInChildren<Animator>();
 
-        _currentTile = GetIntersection(transform.localPosition);
-        Debug.Log(_currentTile);
+        var nextTile = GetIntersection(transform.localPosition);
+        if (nextTile != null)
+            _currentTile = nextTile;
+
+        _moveDirection = MoveDirection.Left;
+        ChangePosition(_moveDirection);
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            _moveDirection = MoveDirection.Up;
-            MoveToNextTile();
-        }
+            ChangePosition(MoveDirection.Up);
         else if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            _moveDirection = MoveDirection.Left;
-            MoveToNextTile();
-        }
+            ChangePosition(MoveDirection.Left);
         else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            _moveDirection = MoveDirection.Down;
-            MoveToNextTile();
-        }
+            ChangePosition(MoveDirection.Down);
         else if (Input.GetKeyDown(KeyCode.RightArrow))
+            ChangePosition(MoveDirection.Right);
+
+        Move();
+    }
+
+    private void ChangePosition(MoveDirection direction)
+    {
+        if (direction != _moveDirection)
+            _nextDirection = direction;
+
+        if (_currentTile != null)
         {
-            _moveDirection = MoveDirection.Right;
-            MoveToNextTile();
+            var nextTile = MoveToNeighbor(direction);
+            if (nextTile != null)
+            {
+                _moveDirection = direction;
+                _targetTile = nextTile;
+                _previousTile = _currentTile;
+                _currentTile = null;
+            }
         }
     }
 
     private void Move()
     {
-        _playerAnimator.speed = 1f;
-        transform.localPosition += GetVectorDirection() * Speed * Time.deltaTime;
+        if (_targetTile != _currentTile && _targetTile != null)
+        {
+            if (OvershotTarget())
+            {
+                _currentTile = _targetTile;
+
+                transform.localPosition = _currentTile.transform.localPosition;
+
+                var nextTile = MoveToNeighbor(_nextDirection);
+                if (nextTile != null)
+                    _moveDirection = _nextDirection;
+                if (nextTile == null)
+                    nextTile = MoveToNeighbor(_moveDirection);
+                if (nextTile != null)
+                {
+                    _targetTile = nextTile;
+                    _previousTile = _currentTile;
+                    _currentTile = null;
+                }
+                else
+                {
+                    _moveDirection = MoveDirection.Stale;
+                    _playerAnimator.speed = 0f;
+                }
+            }
+            else
+            {
+                transform.localPosition += GetVectorDirection() * Speed * Time.deltaTime;
+                _playerAnimator.speed = 1f;
+            }
+        }
+
         UpdateSprite();
     }
 
     private void MoveToNextTile()
     {
         var nextTile = MoveToNeighbor(_moveDirection);
-
         if (nextTile != null)
         {
             transform.localPosition = nextTile.transform.localPosition;
@@ -123,6 +166,20 @@ public class PlayerController : MonoBehaviour
             case MoveDirection.Right: return _currentTile.RightNeighbor;
             default: return null;
         }
+    }
+
+    private bool OvershotTarget()
+    {
+        var tileToTarget = DistanceFromTile(_targetTile.transform.localPosition);
+        var tileToSelf = DistanceFromTile(transform.localPosition);
+
+        return tileToSelf > tileToTarget;
+    }
+
+    private float DistanceFromTile(Vector3 target)
+    {
+        var distance = target - _previousTile.transform.localPosition;
+        return distance.sqrMagnitude;
     }
 }
 
