@@ -16,6 +16,7 @@ public class Level
     public int FruitPoints;
     public int NormalEnergizerTime;
     public int HardEnergizerTime;
+    public float[] GhostTimers = new float[7];
 }
 
 [Serializable]
