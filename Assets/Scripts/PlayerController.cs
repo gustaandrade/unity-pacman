@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     [Space(10), Header("Variables")]
     public float Speed;
+    public MoveDirection CurrentMoveOrientation;
     
     private Animator _playerAnimator;
     
@@ -27,6 +28,8 @@ public class PlayerController : MonoBehaviour
             _currentIntersectionTile = nextTile;
 
         _currentMoveDirection = MoveDirection.Left;
+        CurrentMoveOrientation = MoveDirection.Left;
+
         ChangePosition(_currentMoveDirection);
     }
 
@@ -126,6 +129,8 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateSprite()
     {
+        CurrentMoveOrientation = _currentMoveDirection;
+
         switch (_currentMoveDirection)
         {
             case MoveDirection.Up:
@@ -146,9 +151,6 @@ public class PlayerController : MonoBehaviour
             case MoveDirection.Right:
                 transform.localScale = new Vector3(1.5f, 1.5f, 1f);
                 transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-                break;
-
-            default:
                 break;
         }
     }

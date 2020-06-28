@@ -8,10 +8,16 @@ using Vector3 = UnityEngine.Vector3;
 
 public class GhostController : MonoBehaviour
 {
-    [Space(10), Header("Variables")]
+    [Space(10), Header("Variables")] 
+    public Ghost Ghost;
     public float Speed;
+    public float ReleaseTime;
+    public bool IsInGhostHouse;
+
+    private MazeTile _scatterTile;
 
     private GameObject _player;
+    private PlayerController _playerController;
 
     private MoveDirection _currentMoveDirection;
     private MoveDirection _nextMoveDirection;
@@ -23,38 +29,60 @@ public class GhostController : MonoBehaviour
     private int _modeChangeIteration = 0;
     private float _modeChangeTimer = 0f;
 
+    private float _currentReleaseTimer;
+
     private GhostMode _currentGhostMode;
     private GhostMode _previousGhostMode;
 
     private Level _currentLevel;
 
+    private List<GhostController> _ghostControllers;
+
+    private Animator _spriteAnimator;
+
     private void Awake()
     {
         _player = GameObject.FindGameObjectWithTag("Player");
+        _playerController = _player.GetComponent<PlayerController>();
 
         _currentGhostMode = GhostMode.Scatter;
         _currentLevel = LevelController.Instance.GetCurrentLevel();
+
+        GetScatterTile();
 
         var nextTile = GetIntersection(transform.localPosition);
         if (nextTile != null)
             _currentIntersectionTile = nextTile;
 
+        if (IsInGhostHouse)
+        {
+            _currentMoveDirection = MoveDirection.Up;
+            _targetIntersectionTile = _currentIntersectionTile.UpNeighbor;
+        }
+        else
+        {
+            _currentMoveDirection = MoveDirection.Left;
+            _targetIntersectionTile = ChooseNextTile();
+        }
+
         _previousIntersectionTile = _currentIntersectionTile;
 
-        _currentMoveDirection = MoveDirection.Right;
+        _ghostControllers = MazeAssembler.Instance.gameObject.GetComponentsInChildren<GhostController>().ToList();
 
-        _targetIntersectionTile = GetIntersection(_player.transform.localPosition);
+        _spriteAnimator = GetComponentInChildren<Animator>();
     }
 
     private void Update()
     {
         HandleGhostMode();
+        CheckForReleaseGhost();
         Move();
+        UpdateAnimation();
     }
 
     private void Move()
     {
-        if (_targetIntersectionTile != _currentIntersectionTile && _targetIntersectionTile != null)
+        if (_targetIntersectionTile != _currentIntersectionTile && _targetIntersectionTile != null && !IsInGhostHouse)
         {
             if (OvershotTarget())
             {
@@ -156,20 +184,69 @@ public class GhostController : MonoBehaviour
         _currentGhostMode = mode;
     }
 
+    private Vector3 GetGhostTargetTile()
+    {
+        if (_currentGhostMode == GhostMode.Scatter)
+            return _scatterTile.transform.localPosition;
+        
+        if (_currentGhostMode == GhostMode.Chase)
+        {
+            switch (Ghost)
+            {
+                case Ghost.Blinky:
+                    return _player.transform.localPosition;
+
+                case Ghost.Pinky:
+                    return _player.transform.localPosition +
+                           4 * GetVectorDirection(_playerController.CurrentMoveOrientation);
+
+                case Ghost.Inky:
+                    var blinky = _ghostControllers.FirstOrDefault(g => g.Ghost == Ghost.Blinky);
+                    var blinkyPosition = blinky != null ? blinky.transform.position : _player.transform.position;
+                    var targetTile = _player.transform.localPosition +
+                                     2 * GetVectorDirection(_playerController.CurrentMoveOrientation);
+                    var inkyDistance = GetDistanceBetweenVectors(blinkyPosition, targetTile);
+
+                    return new Vector3(blinkyPosition.x + inkyDistance, blinkyPosition.y + inkyDistance, blinkyPosition.z);
+
+                case Ghost.Clyde:
+                    var clydeDistance = GetDistanceBetweenVectors(transform.position, _player.transform.position);
+                    
+                    return clydeDistance <= 8 ? _scatterTile.transform.localPosition : _player.transform.position;
+
+                default:
+                    return Vector3.zero;
+            }
+        }
+
+        return Vector3.zero;
+    }
+
+    private void CheckForReleaseGhost()
+    {
+        if (!IsInGhostHouse) return;
+
+        _currentReleaseTimer += Time.deltaTime;
+
+        if (!(_currentReleaseTimer > ReleaseTime)) return;
+        
+        IsInGhostHouse = false;
+    }
+
     private IntersectionTile ChooseNextTile()
     {
         IntersectionTile targetNode = null;
         var leastDistance = 999999f;
 
-        var targetVector = _player.transform.localPosition;
+        var targetTile = GetGhostTargetTile();
 
         for (var i = 0; i < _currentIntersectionTile.Neighbors.Length; i++)
         {
             if (_currentIntersectionTile.NeighborDirections[i] != Vector3.zero &&
-                GetOppositeDirection(GetDirectionFromVector(_currentIntersectionTile.NeighborDirections[i])) != _currentMoveDirection)
+                GetDirectionFromVector(_currentIntersectionTile.NeighborDirections[i]) != GetOppositeDirection(_currentMoveDirection))
             {
                 var distance = GetDistanceBetweenVectors
-                    (_currentIntersectionTile.Neighbors[i].transform.localPosition, targetVector);
+                    (_currentIntersectionTile.Neighbors[i].transform.localPosition, targetTile);
                 if (distance < leastDistance)
                 {
                     leastDistance = distance;
@@ -249,11 +326,57 @@ public class GhostController : MonoBehaviour
         return Mathf.Sqrt(dx * dx + dy * dy);
     }
 
-    private List<IntersectionTile> CheckValidTiles()
+    private void GetScatterTile()
     {
-        return _currentIntersectionTile.Neighbors.Where
-            ((t, i) => 
-            _currentIntersectionTile.NeighborDirections[i] != Vector3.zero).ToList();
+        switch(Ghost)
+        {
+            case Ghost.Blinky:
+                _scatterTile = MazeAssembler.Instance.MazeTiles.FirstOrDefault(m => m.TileX == 25 && m.TileY == 31);
+                break;
+            
+            case Ghost.Pinky:
+                _scatterTile = MazeAssembler.Instance.MazeTiles.FirstOrDefault(m => m.TileX == 2 && m.TileY == 31);
+                break;
+            
+            case Ghost.Inky:
+                _scatterTile = MazeAssembler.Instance.MazeTiles.FirstOrDefault(m => m.TileX == 25 && m.TileY == -1);
+                break;
+            
+            case Ghost.Clyde:
+                _scatterTile = MazeAssembler.Instance.MazeTiles.FirstOrDefault(m => m.TileX == 2 && m.TileY == -1);
+                break;
+            
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private void UpdateAnimation()
+    {
+        switch(_currentMoveDirection)
+        {
+            case MoveDirection.Up:
+                _spriteAnimator.SetInteger("GhostDirection", 0);
+                break;
+
+            case MoveDirection.Left:
+                _spriteAnimator.SetInteger("GhostDirection", 1);
+                break;
+            
+            case MoveDirection.Down:
+                _spriteAnimator.SetInteger("GhostDirection", 2);
+                break;
+            
+            case MoveDirection.Right:
+                _spriteAnimator.SetInteger("GhostDirection", 3);
+                break;
+            
+            case MoveDirection.Stale:
+                break;
+            
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 }
 
@@ -263,4 +386,12 @@ public enum GhostMode
     Scatter,
     Chase,
     Frightened
+}
+
+public enum Ghost
+{
+    Blinky,
+    Pinky,
+    Inky,
+    Clyde
 }
