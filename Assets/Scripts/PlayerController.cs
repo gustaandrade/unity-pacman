@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour, IMazeEntity
 
     private void Update()
     {
+        // waits for a input for the player to move accordingly
         if (Input.GetKeyDown(KeyCode.UpArrow))
             ChangePosition(MoveDirection.Up);
         else if (Input.GetKeyDown(KeyCode.LeftArrow))
@@ -47,6 +48,10 @@ public class PlayerController : MonoBehaviour, IMazeEntity
         ConsumePellet();
     }
 
+    /// <summary>
+    /// Changes player position based on the next MoveDirection
+    /// </summary>
+    /// <param name="direction">The next MoveDirection to travel</param>
     private void ChangePosition(MoveDirection direction)
     {
         if (direction != _currentMoveDirection)
@@ -65,6 +70,9 @@ public class PlayerController : MonoBehaviour, IMazeEntity
         }
     }
 
+    /// <summary>
+    /// Moves the player accordingly to the target tiles
+    /// </summary>
     public void Move()
     {
         if (_targetIntersectionTile != _currentIntersectionTile && _targetIntersectionTile != null)
@@ -114,6 +122,9 @@ public class PlayerController : MonoBehaviour, IMazeEntity
         }
     }
 
+    /// <summary>
+    /// Updates player animation based on the trajectory
+    /// </summary>
     public void UpdateAnimation()
     {
         CurrentMoveOrientation = _currentMoveDirection;
@@ -142,6 +153,9 @@ public class PlayerController : MonoBehaviour, IMazeEntity
         }
     }
 
+    /// <summary>
+    /// Searches for a pellet object in the player's positions and consumes it
+    /// </summary>
     private void ConsumePellet()
     {
         var actualTile = GetPelletAtLocation(transform.localPosition);
@@ -152,6 +166,11 @@ public class PlayerController : MonoBehaviour, IMazeEntity
         }
     }
 
+    /// <summary>
+    /// Gets which pellet the player are in the same tile of
+    /// </summary>
+    /// <param name="location">Current location to check</param>
+    /// <returns>The MazeTile correspondent</returns>
     public static MazeTile GetPelletAtLocation(Vector3 location)
     {
         var mazeTile = MazeAssembler.Instance.AllPelletTiles.FirstOrDefault

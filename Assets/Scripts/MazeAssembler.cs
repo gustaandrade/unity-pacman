@@ -39,6 +39,9 @@ public class MazeAssembler : MonoBehaviour
     private List<MazeTile> _energizerTiles;
     private List<MazeTile> _fruitTiles;
 
+    /// <summary>
+    /// Assembles the entire maze based on the MazeConfiguration ScriptableObject
+    /// </summary>
     private void Awake()
     {
         if (Instance == null)

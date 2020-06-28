@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
+    // Instance to access GameController class easier from outside
     public static GameController Instance;
 
     [Space(10), Header("Maze")] 
@@ -21,7 +22,6 @@ public class GameController : MonoBehaviour
     public int GhostsEaten;
     public int PelletsConsumed;
     public int EnergizersConsumed;
-    public float TimeConsumed;
 
     [Space(10), Header("Level Variables")]
     public bool IsEnergized;
@@ -49,6 +49,7 @@ public class GameController : MonoBehaviour
         if (Instance == null)
             Instance = this;
 
+        // Check if Lives is on PlayerPrefs first to determine the number of lives
         Lives = PlayerPrefs.HasKey("Lives") 
             ? PlayerPrefs.GetInt("Lives") <= 0 
                 ? 5
@@ -58,14 +59,14 @@ public class GameController : MonoBehaviour
         Player = MazeAssembler.Instance.GetComponentInChildren<PlayerController>();
         Ghosts = MazeAssembler.Instance.GetComponentsInChildren<GhostController>().ToList();
 
+        // Instantiates the LevelPrefabs accordingly the number of lives
         for (var i = 0; i < Lives; i++)
             Instantiate(LivesPrefab, LivesContainer.transform);
     }
 
     private void Update()
     {
-        TimeConsumed += Time.deltaTime;
-
+        // Checks if the player collected all pellets and energizers from maze
         if (PelletsConsumed >= 240 && EnergizersConsumed >= 4)
             Win();
     }
@@ -100,6 +101,10 @@ public class GameController : MonoBehaviour
         GhostsEaten++;
     }
 
+    /// <summary>
+    /// Changes all ghosts to Frightened Mode or from FrightenedMode to former mode
+    /// </summary>
+    /// <param name="changeTo">Determines if the ghosts are entering or leaving Frightened Mode</param>
     public void ChangeFrightenedModeTo(bool changeTo)
     {
         IsEnergized = changeTo;
@@ -108,6 +113,9 @@ public class GameController : MonoBehaviour
         if (!changeTo) GhostsEaten = 0;
     }
 
+    /// <summary>
+    /// Declares a win for the player and runs the win routines
+    /// </summary>
     public void Win()
     {
         if (_won) return;
@@ -119,6 +127,9 @@ public class GameController : MonoBehaviour
         StartCoroutine(nameof(WinCoroutine));
     }
 
+    /// <summary>
+    /// Declares a defeat for the player and runs the defeat routines
+    /// </summary>
     public void Defeat()
     {
         if (_defeated) return;
@@ -157,6 +168,11 @@ public class GameController : MonoBehaviour
         SceneManager.LoadScene(0);
     }
     
+    /// <summary>
+    /// Returns the appropriate sprite for the desired fruit based on the LevelFruit enum
+    /// </summary>
+    /// <param name="fruit">The desired fruit based on LevelFruit enum</param>
+    /// <returns>A fruit Sprite to place in a Sprite Renderer or Image</returns>
     public Sprite GetFruitSpriteFromData(LevelFruit fruit)
     {
         switch (fruit)

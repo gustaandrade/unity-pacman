@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -40,6 +38,9 @@ public class MazeTile : MonoBehaviour
         RightNeighbor = right;
     }
 
+    /// <summary>
+    /// Consumes the pellet, energizer of fruit and does specific things for each one
+    /// </summary>
     private void ConsumePellet()
     {
         if (_mazeTileType == MazeTileType.Pellet 

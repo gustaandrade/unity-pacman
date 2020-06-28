@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class GhostController : MonoBehaviour, IMazeEntity
 {
-    [Space(10), Header("Ghost Variables")] 
+    [Space(10), Header("Ghost Types")] 
     public GhostType GhostType;
     public GhostMode CurrentGhostMode;
 
+    [Space(10), Header("Ghost Variables")]
     public float NormalSpeed;
     public float FrightenedSpeed;
     public float EatenSpeed;
@@ -41,6 +42,7 @@ public class GhostController : MonoBehaviour, IMazeEntity
         _player = GameObject.FindGameObjectWithTag("Player");
         _playerController = _player.GetComponent<PlayerController>();
 
+        // sets the first movement of each ghost to scatter, using the out of bounds tiles
         CurrentGhostMode = GhostMode.Scatter;
         GetScatterTile();
 
@@ -48,6 +50,8 @@ public class GhostController : MonoBehaviour, IMazeEntity
         if (nextTile != null)
             _currentIntersectionTile = nextTile;
 
+        // only blinky starts outside the ghost house, and moves left first
+        // the other 3 ghosts need to leave the ghost house first
         if (IsInGhostHouse)
         {
             _currentMoveDirection = MoveDirection.Up;
@@ -72,6 +76,9 @@ public class GhostController : MonoBehaviour, IMazeEntity
         UpdateAnimation();
     }
 
+    /// <summary>
+    /// Moves each ghost based on the chosen IntersectionTiles
+    /// </summary>
     public void Move()
     {
         if (_targetIntersectionTile != _currentIntersectionTile && _targetIntersectionTile != null && !IsInGhostHouse)
@@ -99,6 +106,9 @@ public class GhostController : MonoBehaviour, IMazeEntity
         }
     }
 
+    /// <summary>
+    /// Changes the behavior of each ghost depending of their Typing and Mode
+    /// </summary>
     private void HandleGhostMode()
     {
         if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten && !IsInGhostHouse)
@@ -106,6 +116,8 @@ public class GhostController : MonoBehaviour, IMazeEntity
             _modeChangeTimer += Time.deltaTime;
             NormalSpeed = _previousMoveSpeed;
 
+            // each iteration is based on the level difficulties, and how the ghosts change from scatter to chase
+            // all data are saved on a ScriptableObject with the difficult settings
             switch (_modeChangeIteration)
             {
                 case 0:
@@ -180,6 +192,10 @@ public class GhostController : MonoBehaviour, IMazeEntity
         ChangeGhostMode(setTo ? GhostMode.Frightened : _previousGhostMode);
     }
 
+    /// <summary>
+    /// Changes the Mode of a Ghost and stores the previous Mode to easy change
+    /// </summary>
+    /// <param name="mode">The desired mode to change</param>
     private void ChangeGhostMode(GhostMode mode)
     {
         if (CurrentGhostMode == mode) return;
@@ -190,23 +206,34 @@ public class GhostController : MonoBehaviour, IMazeEntity
         CurrentGhostMode = mode;
     }
 
+    /// <summary>
+    /// Gets the next target tile that the Ghost needs to travel
+    /// </summary>
+    /// <returns>The target tile that the Ghost will travel to</returns>
     private Vector3 GetGhostTargetTile()
     {
+        // first check is to determine which Ghost Mode the Ghost are currently
         switch (CurrentGhostMode)
         {
+            // gets the scatter out of bounds tile to pursue
             case GhostMode.Scatter:
                 return _scatterTile.transform.localPosition;
             
+            // when in chase mode, all four ghosts behave different one from each other, as follows:
             case GhostMode.Chase:
                 switch (GhostType)
                 {
+                    // Blinky always chases PacMan using the tile with Pacman's current position as reference
                     case GhostType.Blinky:
                         return _player.transform.localPosition;
 
+                    // Pinky chases PacMan using the tile with Pacman's current position + 4 tiles, regarding the orientation
                     case GhostType.Pinky:
                         return _player.transform.localPosition +
                                4 * Helpers.GetVectorDirection(_playerController.CurrentMoveOrientation);
 
+                    // Inky uses Blinky's position to based their tile to flank Pacman. They calculate the distance between Blinky and Pacman and,
+                    // based on that value, traces a vector in the opposite direction and chooses that tile to pursue
                     case GhostType.Inky:
                         var blinky = GameController.Instance.Ghosts.FirstOrDefault(g => g.GhostType == GhostType.Blinky);
                         var blinkyPosition = blinky != null ? blinky.transform.localPosition : _player.transform.localPosition;
@@ -216,6 +243,8 @@ public class GhostController : MonoBehaviour, IMazeEntity
 
                         return new Vector3(blinkyPosition.x + inkyDistance, blinkyPosition.y + inkyDistance, blinkyPosition.z);
 
+                    // Clyde pursues the tile with Pacman's position, until they get in a tile that is less than 8 units distant.
+                    // When this happens, Clyde changes their tile to the scatter mode tile, until the distance is more than 8 units again
                     case GhostType.Clyde:
                         var clydeDistance = Helpers.GetDistanceBetweenVectors(transform.localPosition, _player.transform.localPosition);
                     
@@ -225,9 +254,12 @@ public class GhostController : MonoBehaviour, IMazeEntity
                         return Vector3.zero;
                 }
 
+            // gets a random tile on the maze
             case GhostMode.Frightened:
                 return new Vector3(UnityEngine.Random.Range(0, 30), UnityEngine.Random.Range(0, 26), 0f);
 
+            // gets the first tile of the Ghost House Entrance
+            // KNOWN ISSUE: The Ghost does not go inside the House yet, only to the entrance. This behavior needs to be fixed
             case GhostMode.Eaten:
                 var ghostTile = MazeAssembler.Instance.MazeTiles.FirstOrDefault(m =>
                     m.GetComponent<IntersectionTile>() != null && m.GetComponent<IntersectionTile>().IsGhostHouseEntrance);
@@ -239,6 +271,9 @@ public class GhostController : MonoBehaviour, IMazeEntity
         }
     }
 
+    /// <summary>
+    /// Releases each ghost using the predefined times
+    /// </summary>
     private void CheckForReleaseGhost()
     {
         if (!IsInGhostHouse) return;
@@ -250,13 +285,19 @@ public class GhostController : MonoBehaviour, IMazeEntity
         IsInGhostHouse = false;
     }
 
+    /// <summary>
+    /// Chooses which tile the Ghost needs to travel based on less distance overall
+    /// </summary>
+    /// <returns>The next IntersectionTile for the Ghost to travel</returns>
     private IntersectionTile ChooseNextTile()
     {
         IntersectionTile targetNode = null;
         var leastDistance = 999999f;
 
+        // gets the tile based on the TargetTile function
         var targetTile = GetGhostTargetTile();
 
+        // searches for all possible tiles to travel and chooses the one that makes the overall travel shorter
         for (var i = 0; i < _currentIntersectionTile.Neighbors.Length; i++)
         {
             if (_currentIntersectionTile.NeighborDirections[i] != Vector3.zero &&
@@ -277,6 +318,9 @@ public class GhostController : MonoBehaviour, IMazeEntity
         return targetNode;
     }
 
+    /// <summary>
+    /// Checks if the Ghost collided with something, and does something for each relevant encounter
+    /// </summary>
     private void CheckCollision()
     {
         if (Helpers.GetDistanceBetweenVectors(transform.localPosition, _player.transform.localPosition) > 0.5f)
@@ -289,11 +333,11 @@ public class GhostController : MonoBehaviour, IMazeEntity
             ScoreController.Instance.SetGhostScore();
             SoundController.Instance.PlayGhostEatenSFX();
         }
-        //else if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten)
-        //{
-        //    GameController.Instance.Defeat();
-        //    SoundController.Instance.PlayDyingMusic();
-        //}
+        else if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten)
+        {
+            GameController.Instance.Defeat();
+            SoundController.Instance.PlayDyingMusic();
+        }
     }
 
     public bool TargetWasOvershot()
@@ -310,6 +354,9 @@ public class GhostController : MonoBehaviour, IMazeEntity
         return distance.sqrMagnitude;
     }
 
+    /// <summary>
+    /// Gets each ghost scatter tile from the maze
+    /// </summary>
     private void GetScatterTile()
     {
         switch(GhostType)
@@ -335,6 +382,9 @@ public class GhostController : MonoBehaviour, IMazeEntity
         }
     }
 
+    /// <summary>
+    /// Updates Ghost animations depending of their Mode and Type
+    /// </summary>
     public void UpdateAnimation()
     {
         _spriteAnimator.SetBool("Frightened", CurrentGhostMode == GhostMode.Frightened);
