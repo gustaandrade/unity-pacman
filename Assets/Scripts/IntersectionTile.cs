@@ -20,9 +20,10 @@ public class IntersectionTile : MonoBehaviour
     public IntersectionTile[] Neighbors;
     public Vector3[] NeighborDirections;
 
-    [Space(10), Header("Portal Configuration")]
+    [Space(10), Header("Extra Configuration")]
     public bool IsPortal;
     public IntersectionTile OppositePortal;
+    public bool IsGhostHouse;
 
     private void Awake()
     {

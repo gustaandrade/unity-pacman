@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using UnityEngine;
+using Random = System.Random;
 using Vector3 = UnityEngine.Vector3;
 
 public class GhostController : MonoBehaviour
@@ -12,6 +13,7 @@ public class GhostController : MonoBehaviour
     public Ghost Ghost;
     public float Speed;
     public float FrightenedSpeed;
+    public float EatenSpeed;
     public float ReleaseTime;
     public bool IsInGhostHouse;
 
@@ -83,6 +85,7 @@ public class GhostController : MonoBehaviour
         WatchModeChange();
         CheckForReleaseGhost();
         Move();
+        CheckCollision();
         UpdateAnimation();
     }
 
@@ -114,7 +117,7 @@ public class GhostController : MonoBehaviour
 
     private void HandleGhostMode()
     {
-        if (_currentGhostMode != GhostMode.Frightened)
+        if (_currentGhostMode != GhostMode.Frightened && _currentGhostMode != GhostMode.Eaten)
         {
             _modeChangeTimer += Time.deltaTime;
 
@@ -184,10 +187,16 @@ public class GhostController : MonoBehaviour
         {
             Speed = FrightenedSpeed;
         }
+        else if (_currentGhostMode == GhostMode.Eaten)
+        {
+            Speed = EatenSpeed;
+        }
     }
 
     private void WatchModeChange()
     {
+        if (_currentGhostMode == GhostMode.Eaten) return;
+
         ChangeGhostMode(ScoreController.Instance.IsEnergized ? GhostMode.Frightened : _previousGhostMode);
     }
 
@@ -195,7 +204,7 @@ public class GhostController : MonoBehaviour
     {
         if (_currentGhostMode == mode) return;
      
-        if (_currentGhostMode != GhostMode.Frightened)
+        if (_currentGhostMode != GhostMode.Frightened && _currentGhostMode != GhostMode.Eaten)
             _previousGhostMode = _currentGhostMode;
         
         _currentGhostMode = mode;
@@ -203,40 +212,52 @@ public class GhostController : MonoBehaviour
 
     private Vector3 GetGhostTargetTile()
     {
-        if (_currentGhostMode == GhostMode.Scatter)
-            return _scatterTile.transform.localPosition;
-        
-        if (_currentGhostMode == GhostMode.Chase)
+        Debug.Log(_currentGhostMode);
+
+        switch (_currentGhostMode)
         {
-            switch (Ghost)
-            {
-                case Ghost.Blinky:
-                    return _player.transform.localPosition;
+            case GhostMode.Scatter:
+                return _scatterTile.transform.localPosition;
+            
+            case GhostMode.Chase:
+                switch (Ghost)
+                {
+                    case Ghost.Blinky:
+                        return _player.transform.localPosition;
 
-                case Ghost.Pinky:
-                    return _player.transform.localPosition +
-                           4 * GetVectorDirection(_playerController.CurrentMoveOrientation);
+                    case Ghost.Pinky:
+                        return _player.transform.localPosition +
+                               4 * GetVectorDirection(_playerController.CurrentMoveOrientation);
 
-                case Ghost.Inky:
-                    var blinky = _ghostControllers.FirstOrDefault(g => g.Ghost == Ghost.Blinky);
-                    var blinkyPosition = blinky != null ? blinky.transform.position : _player.transform.position;
-                    var targetTile = _player.transform.localPosition +
-                                     2 * GetVectorDirection(_playerController.CurrentMoveOrientation);
-                    var inkyDistance = GetDistanceBetweenVectors(blinkyPosition, targetTile);
+                    case Ghost.Inky:
+                        var blinky = _ghostControllers.FirstOrDefault(g => g.Ghost == Ghost.Blinky);
+                        var blinkyPosition = blinky != null ? blinky.transform.localPosition : _player.transform.localPosition;
+                        var targetTile = _player.transform.localPosition +
+                                         2 * GetVectorDirection(_playerController.CurrentMoveOrientation);
+                        var inkyDistance = GetDistanceBetweenVectors(blinkyPosition, targetTile);
 
-                    return new Vector3(blinkyPosition.x + inkyDistance, blinkyPosition.y + inkyDistance, blinkyPosition.z);
+                        return new Vector3(blinkyPosition.x + inkyDistance, blinkyPosition.y + inkyDistance, blinkyPosition.z);
 
-                case Ghost.Clyde:
-                    var clydeDistance = GetDistanceBetweenVectors(transform.position, _player.transform.position);
+                    case Ghost.Clyde:
+                        var clydeDistance = GetDistanceBetweenVectors(transform.localPosition, _player.transform.localPosition);
                     
-                    return clydeDistance <= 8 ? _scatterTile.transform.localPosition : _player.transform.position;
+                        return clydeDistance <= 8 ? _scatterTile.transform.localPosition : _player.transform.localPosition;
 
-                default:
-                    return Vector3.zero;
-            }
+                    default:
+                        return Vector3.zero;
+                }
+
+            case GhostMode.Frightened:
+                return new Vector3(UnityEngine.Random.Range(0, 30), UnityEngine.Random.Range(0, 26), 1f);
+
+            case GhostMode.Eaten:
+                Debug.Log(GetGhostHouse());
+
+                return GetGhostHouse();
+
+            default:
+                return Vector3.zero;
         }
-
-        return Vector3.zero;
     }
 
     private void CheckForReleaseGhost()
@@ -274,6 +295,17 @@ public class GhostController : MonoBehaviour
         }
 
         return targetNode;
+    }
+
+    private void CheckCollision()
+    {
+        if (GetDistanceBetweenVectors(transform.localPosition, _player.transform.localPosition) > 0.5f)
+            return;
+
+        if (_currentGhostMode == GhostMode.Frightened)
+            ChangeGhostMode(GhostMode.Eaten);
+        else
+            Debug.Log("f in the chat");
     }
 
     private Vector3 GetVectorDirection(MoveDirection direction)
@@ -319,6 +351,14 @@ public class GhostController : MonoBehaviour
             m.TileX == (int)location.x && m.TileY == (int)location.y && m.GetComponent<IntersectionTile>() != null);
 
         return mazeTile != null ? mazeTile.GetComponent<IntersectionTile>() : null;
+    }
+
+    private Vector3 GetGhostHouse()
+    {
+        var mazeTile = MazeAssembler.Instance.MazeTiles.FirstOrDefault(m =>
+            m.GetComponent<IntersectionTile>() != null && m.GetComponent<IntersectionTile>().IsGhostHouse);
+
+        return mazeTile != null ? mazeTile.transform.localPosition : Vector3.zero;
     }
 
     private bool OvershotTarget()
@@ -372,6 +412,7 @@ public class GhostController : MonoBehaviour
     {
         _spriteAnimator.SetBool("Frightened", _currentGhostMode == GhostMode.Frightened);
         _spriteAnimator.SetBool("FrightenedEnding", _currentGhostMode == GhostMode.Frightened && ScoreController.Instance.IsEnergizedTimeEnding);
+        _spriteAnimator.SetBool("Eaten", _currentGhostMode == GhostMode.Eaten);
 
         switch (_currentMoveDirection)
         {
@@ -405,7 +446,8 @@ public enum GhostMode
 {
     Scatter,
     Chase,
-    Frightened
+    Frightened,
+    Eaten
 }
 
 public enum Ghost
