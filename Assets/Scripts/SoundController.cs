@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -30,15 +31,22 @@ public class SoundController : MonoBehaviour
     [Space(10), Header("Ghost SFXs")]
     public AudioClip GhostSFX;
     public AudioClip RetreatingSFX;
+    
+    [Space(10), Header("Dying SFXs")]
+    public AudioClip Dying1SFX;
+    public AudioClip Dying2SFX;
 
     [Space(10), Header("Audio Sources")]
     public AudioSource MusicSource;
     public AudioSource SFXSource;
-    
+    public AudioSource AuxSource;
+
     private AudioClip _currentMunch;
     private AudioClip _currentSiren;
 
     private AudioClip[] _sirenClips;
+
+    private bool _defeated;
 
     private void Awake()
     {
@@ -50,12 +58,12 @@ public class SoundController : MonoBehaviour
         _currentMunch = Munch1SFX;
         _currentSiren = _sirenClips[0];
 
-        PlaySirenMusic();
+        PlayLevelFanfarre();
     }
 
     public void PlayLevelFanfarre()
     {
-        MusicSource.PlayOneShot(LevelFanfarre);
+        StartCoroutine(nameof(PlayLevelFanfarreCoroutine));
     }
 
     public void PlaySirenMusic()
@@ -78,6 +86,7 @@ public class SoundController : MonoBehaviour
     public void PlayGhostEatenSFX()
     {
         SFXSource.PlayOneShot(GhostSFX);
+        PlayRetreatingMusic();
     }
 
     public void PlayEnergizerMusic()
@@ -85,6 +94,38 @@ public class SoundController : MonoBehaviour
         StopAllCoroutines();
 
         StartCoroutine(nameof(PlayEnergizerMusicCoroutine));
+    }
+
+    public void PlayRetreatingMusic()
+    {
+        StartCoroutine(nameof(PlayRetreatingMusicCoroutine));
+    }
+
+    public void PlayDyingMusic()
+    {
+        if (_defeated) return;
+        _defeated = true;
+
+        StopAllCoroutines();
+
+        StartCoroutine(nameof(PlayDyingMusicCoroutine));
+    }
+
+    private IEnumerator PlayLevelFanfarreCoroutine()
+    {
+        Time.timeScale = 0f;
+
+        AuxSource.clip = LevelFanfarre;
+        AuxSource.Play();
+        
+        yield return new WaitForSecondsRealtime(LevelFanfarre.length + 1f);
+
+        AuxSource.Stop();
+        AuxSource.clip = null;
+
+        Time.timeScale = 1f;
+
+        PlaySirenMusic();
     }
 
     private IEnumerator PlayEnergizerMusicCoroutine()
@@ -106,5 +147,33 @@ public class SoundController : MonoBehaviour
         GameController.Instance.IsEnergizedTimeEnding = false;
 
         GameController.Instance.ChangeFrightenedModeTo(false);
+    }
+
+    private IEnumerator PlayRetreatingMusicCoroutine()
+    {
+        AuxSource.clip = RetreatingSFX;
+        AuxSource.Play();
+
+        yield return new WaitForSeconds(3);
+
+        AuxSource.clip = null;
+        AuxSource.Stop();
+    }
+
+    private IEnumerator PlayDyingMusicCoroutine()
+    {
+        AuxSource.clip = Dying1SFX;
+        AuxSource.Play();
+
+        yield return new WaitForSecondsRealtime(Dying1SFX.length - 1f);
+
+        AuxSource.Stop();
+        AuxSource.clip = Dying2SFX;
+        AuxSource.Play();
+
+        yield return new WaitForSecondsRealtime(Dying2SFX.length);
+
+        AuxSource.clip = null;
+        AuxSource.Stop();
     }
 }

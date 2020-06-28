@@ -51,8 +51,6 @@ public class GameController : MonoBehaviour
                 : PlayerPrefs.GetInt("Lives") 
             : 5;
 
-        Debug.Log(Lives);
-
         Player = MazeAssembler.Instance.GetComponentInChildren<PlayerController>();
         Ghosts = MazeAssembler.Instance.GetComponentsInChildren<GhostController>().ToList();
 

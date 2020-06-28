@@ -292,6 +292,7 @@ public class GhostController : MonoBehaviour, IMazeEntity
         else if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten)
         {
             GameController.Instance.Defeat();
+            SoundController.Instance.PlayDyingMusic();
         }
     }
 
