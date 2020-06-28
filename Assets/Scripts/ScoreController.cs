@@ -11,13 +11,7 @@ public class ScoreController : MonoBehaviour
     public Text LevelScore;
     public Text HighScore;
 
-    [Space(10), Header("Game Variables")]
-    public bool IsEnergized;
-    public bool IsEnergizedTimeEnding;
-
     private int _currentScore;
-    private int _pelletsConsumed;
-    private int _energizersConsumed;
 
     private void Awake()
     {
@@ -35,16 +29,6 @@ public class ScoreController : MonoBehaviour
         return PlayerPrefs.GetInt("HighScore");
     }
 
-    public int GetPelletsConsumed()
-    {
-        return _pelletsConsumed;
-    }
-
-    public int GetEnergizersConsumed()
-    {
-        return _energizersConsumed;
-    }
-
     public void SetLevelScore(int score)
     {
         _currentScore += score;
@@ -55,15 +39,5 @@ public class ScoreController : MonoBehaviour
     {
         HighScore.text = score.ToString("000000");
         PlayerPrefs.SetInt("HighScore", score);
-    }
-
-    public void SetPelletsConsumed()
-    {
-        _pelletsConsumed++;
-    }
-
-    public void SetEnergizersConsumed()
-    {
-        _energizersConsumed++;
     }
 }

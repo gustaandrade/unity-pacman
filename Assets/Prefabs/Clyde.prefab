@@ -112,6 +112,16 @@ PrefabInstance:
       propertyPath: Ghost
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 8132431663866180489, guid: 4fbd45c9ad79d8742bafc64c66e82949,
+        type: 3}
+      propertyPath: GhostType
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8132431663866180489, guid: 4fbd45c9ad79d8742bafc64c66e82949,
+        type: 3}
+      propertyPath: TimeUntilRelease
+      value: 8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4fbd45c9ad79d8742bafc64c66e82949, type: 3}
 --- !u!1 &7224563855621322022 stripped

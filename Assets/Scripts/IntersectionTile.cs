@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class IntersectionTile : MonoBehaviour
 {
@@ -21,10 +19,9 @@ public class IntersectionTile : MonoBehaviour
     public Vector3[] NeighborDirections;
 
     [Space(10), Header("Extra Configuration")]
+    public bool IsGhostHouseEntrance;
     public bool IsPortal;
     public IntersectionTile OppositePortal;
-    public bool IsGhostHouse;
-    public bool IsGhostHouseEntrance;
 
     private void Awake()
     {

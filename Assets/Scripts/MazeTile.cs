@@ -50,12 +50,12 @@ public class MazeTile : MonoBehaviour
             switch (_mazeTileType)
             {
                 case MazeTileType.Pellet:
-                    ScoreController.Instance.SetPelletsConsumed();
+                    GameController.Instance.SetPelletsConsumed();
                     ScoreController.Instance.SetLevelScore(10);
                     break;
                 
                 case MazeTileType.Energizer:
-                    ScoreController.Instance.SetEnergizersConsumed();
+                    GameController.Instance.SetEnergizersConsumed();
                     ScoreController.Instance.SetLevelScore(50);
                     SoundController.Instance.PlayEnergizerMusic();
                     break;

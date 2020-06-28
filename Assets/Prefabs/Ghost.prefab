@@ -44,11 +44,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0adf2ecf2112d049956263ff99a8ed8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Ghost: 0
-  Speed: 6
+  GhostType: 0
+  NormalSpeed: 6
   FrightenedSpeed: 4
   EatenSpeed: 18
-  ReleaseTime: 0
+  TimeUntilRelease: 0
   IsInGhostHouse: 0
 --- !u!1 &3333821487740029433
 GameObject:

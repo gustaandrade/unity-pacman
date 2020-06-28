@@ -33,8 +33,6 @@ public class SoundController : MonoBehaviour
 
     private AudioClip[] _sirenClips;
 
-    private List<GhostController> _ghosts;
-
     private void Awake()
     {
         if (Instance == null)
@@ -77,31 +75,19 @@ public class SoundController : MonoBehaviour
         MusicSource.clip = EnergizerSFX;
         MusicSource.Play();
 
-        ScoreController.Instance.IsEnergized = true;
-        ChangeToFrightenedMode(true);
+        GameController.Instance.ChangeFrightenedModeTo(true);
 
         yield return new WaitForSeconds(LevelController.Instance.GetCurrentLevel().NormalEnergizerTime * 0.75f);
 
-        ScoreController.Instance.IsEnergizedTimeEnding = true;
+        GameController.Instance.IsEnergizedTimeEnding = true;
 
         yield return new WaitForSeconds(LevelController.Instance.GetCurrentLevel().NormalEnergizerTime * 0.25f);
 
-        _currentSiren = _sirenClips[ScoreController.Instance.GetEnergizersConsumed()];
+        _currentSiren = _sirenClips[GameController.Instance.GetEnergizersConsumed()];
         PlaySirenMusic();
 
-        ScoreController.Instance.IsEnergizedTimeEnding = false;
-        ScoreController.Instance.IsEnergized = false;
-        ChangeToFrightenedMode(false);
-    }
+        GameController.Instance.IsEnergizedTimeEnding = false;
 
-    private void ChangeToFrightenedMode(bool setTo)
-    {
-        if (_ghosts == null)
-        {
-            _ghosts = new List<GhostController>();
-            _ghosts = MazeAssembler.Instance.GetComponentsInChildren<GhostController>().ToList();
-        }
-
-        _ghosts.ForEach(g => g.SetFrightenedModeTo(setTo));
+        GameController.Instance.ChangeFrightenedModeTo(false);
     }
 }
