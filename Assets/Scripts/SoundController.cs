@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class SoundController : MonoBehaviour
@@ -31,6 +32,8 @@ public class SoundController : MonoBehaviour
     private AudioClip _currentSiren;
 
     private AudioClip[] _sirenClips;
+
+    private List<GhostController> _ghosts;
 
     private void Awake()
     {
@@ -75,6 +78,7 @@ public class SoundController : MonoBehaviour
         MusicSource.Play();
 
         ScoreController.Instance.IsEnergized = true;
+        ChangeToFrightenedMode(true);
 
         yield return new WaitForSeconds(LevelController.Instance.GetCurrentLevel().NormalEnergizerTime * 0.75f);
 
@@ -87,5 +91,17 @@ public class SoundController : MonoBehaviour
 
         ScoreController.Instance.IsEnergizedTimeEnding = false;
         ScoreController.Instance.IsEnergized = false;
+        ChangeToFrightenedMode(false);
+    }
+
+    private void ChangeToFrightenedMode(bool setTo)
+    {
+        if (_ghosts == null)
+        {
+            _ghosts = new List<GhostController>();
+            _ghosts = MazeAssembler.Instance.GetComponentsInChildren<GhostController>().ToList();
+        }
+
+        _ghosts.ForEach(g => g.SetFrightenedModeTo(setTo));
     }
 }

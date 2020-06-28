@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using UnityEngine;
-using Random = System.Random;
 using Vector3 = UnityEngine.Vector3;
 
 public class GhostController : MonoBehaviour
@@ -82,7 +79,6 @@ public class GhostController : MonoBehaviour
     private void Update()
     {
         HandleGhostMode();
-        WatchModeChange();
         CheckForReleaseGhost();
         Move();
         CheckCollision();
@@ -102,6 +98,12 @@ public class GhostController : MonoBehaviour
                 {
                     transform.localPosition = _currentIntersectionTile.OppositePortal.transform.localPosition;
                     _currentIntersectionTile = _currentIntersectionTile.OppositePortal;
+                }
+
+                if (_currentIntersectionTile.IsGhostHouseEntrance && _currentGhostMode == GhostMode.Eaten)
+                {
+                    Debug.Log("?");
+                    ChangeGhostMode(_previousGhostMode);
                 }
 
                 _targetIntersectionTile = ChooseNextTile();
@@ -193,11 +195,11 @@ public class GhostController : MonoBehaviour
         }
     }
 
-    private void WatchModeChange()
+    public void SetFrightenedModeTo(bool setTo)
     {
         if (_currentGhostMode == GhostMode.Eaten) return;
 
-        ChangeGhostMode(ScoreController.Instance.IsEnergized ? GhostMode.Frightened : _previousGhostMode);
+        ChangeGhostMode(setTo ? GhostMode.Frightened : _previousGhostMode);
     }
 
     private void ChangeGhostMode(GhostMode mode)
@@ -212,8 +214,6 @@ public class GhostController : MonoBehaviour
 
     private Vector3 GetGhostTargetTile()
     {
-        Debug.Log(_currentGhostMode);
-
         switch (_currentGhostMode)
         {
             case GhostMode.Scatter:
@@ -248,11 +248,9 @@ public class GhostController : MonoBehaviour
                 }
 
             case GhostMode.Frightened:
-                return new Vector3(UnityEngine.Random.Range(0, 30), UnityEngine.Random.Range(0, 26), 1f);
+                return new Vector3(UnityEngine.Random.Range(0, 30), UnityEngine.Random.Range(0, 26), 0f);
 
             case GhostMode.Eaten:
-                Debug.Log(GetGhostHouse());
-
                 return GetGhostHouse();
 
             default:
@@ -263,11 +261,11 @@ public class GhostController : MonoBehaviour
     private void CheckForReleaseGhost()
     {
         if (!IsInGhostHouse) return;
-
+        
         _currentReleaseTimer += Time.deltaTime;
 
         if (!(_currentReleaseTimer > ReleaseTime)) return;
-        
+
         IsInGhostHouse = false;
     }
 
@@ -281,10 +279,11 @@ public class GhostController : MonoBehaviour
         for (var i = 0; i < _currentIntersectionTile.Neighbors.Length; i++)
         {
             if (_currentIntersectionTile.NeighborDirections[i] != Vector3.zero &&
-                GetDirectionFromVector(_currentIntersectionTile.NeighborDirections[i]) != GetOppositeDirection(_currentMoveDirection))
+                _currentIntersectionTile.NeighborDirections[i] != GetVectorDirection(_currentMoveDirection) * -1)
             {
                 var distance = GetDistanceBetweenVectors
                     (_currentIntersectionTile.Neighbors[i].transform.localPosition, targetTile);
+
                 if (distance < leastDistance)
                 {
                     leastDistance = distance;
@@ -356,7 +355,7 @@ public class GhostController : MonoBehaviour
     private Vector3 GetGhostHouse()
     {
         var mazeTile = MazeAssembler.Instance.MazeTiles.FirstOrDefault(m =>
-            m.GetComponent<IntersectionTile>() != null && m.GetComponent<IntersectionTile>().IsGhostHouse);
+            m.GetComponent<IntersectionTile>() != null && m.GetComponent<IntersectionTile>().IsGhostHouseEntrance);
 
         return mazeTile != null ? mazeTile.transform.localPosition : Vector3.zero;
     }

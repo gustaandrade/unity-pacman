@@ -24,6 +24,7 @@ public class IntersectionTile : MonoBehaviour
     public bool IsPortal;
     public IntersectionTile OppositePortal;
     public bool IsGhostHouse;
+    public bool IsGhostHouseEntrance;
 
     private void Awake()
     {
