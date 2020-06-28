@@ -752,6 +752,7 @@ GameObject:
   - component: {fileID: 804085818}
   - component: {fileID: 804085820}
   - component: {fileID: 804085819}
+  - component: {fileID: 804085821}
   m_Layer: 0
   m_Name: Maze
   m_TagString: Untagged
@@ -6175,6 +6176,25 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!95 &804085821
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 804085817}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 0dd6445ec67fdd74ea37d8714d998e67, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 2
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &817597437
 GameObject:
   m_ObjectHideFlags: 0
@@ -13116,6 +13136,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameController
       objectReference: {fileID: 0}
+    - target: {fileID: 4331843006359356130, guid: e820566ffc550414385cbe0c4c7e0fe3,
+        type: 3}
+      propertyPath: Maze
+      value: 
+      objectReference: {fileID: 804085817}
     - target: {fileID: 4331843006359356130, guid: e820566ffc550414385cbe0c4c7e0fe3,
         type: 3}
       propertyPath: LivesContainer

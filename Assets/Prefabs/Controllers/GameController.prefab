@@ -43,6 +43,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2d9ead0a11572748a12d1ca6b3b3727, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Maze: {fileID: 0}
   Player: {fileID: 0}
   Ghosts: []
   Lives: 0

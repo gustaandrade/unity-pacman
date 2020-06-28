@@ -9,6 +9,9 @@ public class GameController : MonoBehaviour
 {
     public static GameController Instance;
 
+    [Space(10), Header("Maze")] 
+    public GameObject Maze;
+
     [Space(10), Header("Maze Entities")]
     public PlayerController Player;
     public List<GhostController> Ghosts = new List<GhostController>();
@@ -38,6 +41,7 @@ public class GameController : MonoBehaviour
     public GameObject LivesPrefab;
     public GameObject LivesContainer;
 
+    private bool _won;
     private bool _defeated;
 
     private void Awake()
@@ -61,6 +65,9 @@ public class GameController : MonoBehaviour
     private void Update()
     {
         TimeConsumed += Time.deltaTime;
+
+        if (PelletsConsumed >= 240 && EnergizersConsumed >= 4)
+            Win();
     }
 
     public int GetPelletsConsumed()
@@ -101,11 +108,22 @@ public class GameController : MonoBehaviour
         if (!changeTo) GhostsEaten = 0;
     }
 
+    public void Win()
+    {
+        if (_won) return;
+        _won = true;
+
+        ScoreController.Instance.SaveLevelScore();
+        LevelController.Instance.AdvanceLevel();
+        
+        StartCoroutine(nameof(WinCoroutine));
+    }
+
     public void Defeat()
     {
         if (_defeated) return;
-
         _defeated = true;
+        
         Lives--;
         PlayerPrefs.SetInt("Lives", Lives);
 
@@ -115,6 +133,17 @@ public class GameController : MonoBehaviour
             ScoreController.Instance.SetHighScore();
 
         StartCoroutine(nameof(DefeatCoroutine));
+    }
+
+    private IEnumerator WinCoroutine()
+    {
+        Maze.GetComponent<Animator>().SetTrigger("Win");
+
+        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(3);
+        Time.timeScale = 1f;
+
+        SceneManager.LoadScene(0);
     }
 
     private IEnumerator DefeatCoroutine()

@@ -21,7 +21,9 @@ public class LevelController : MonoBehaviour
 
         _levelsConfiguration = Resources.Load<LevelsConfiguration>("LevelsConfiguration");
 
-        SetCurrentLevel(1);
+        _currentLevel = PlayerPrefs.HasKey("CurrentLevel")
+            ? PlayerPrefs.GetInt("CurrentLevel")
+            : 1;
 
         foreach (var fruit in GetCurrentLevel().LevelFruits.Where(f => f != LevelFruit.None))
         {
@@ -35,9 +37,9 @@ public class LevelController : MonoBehaviour
         return _levelsConfiguration.Levels.FirstOrDefault(l => l.LevelNumber == _currentLevel);
     }
 
-    public void SetCurrentLevel(int level)
+    public void AdvanceLevel()
     {
-        _currentLevel = level;
+        _currentLevel += 1;
         PlayerPrefs.SetInt("CurrentLevel", _currentLevel);
     }
 }

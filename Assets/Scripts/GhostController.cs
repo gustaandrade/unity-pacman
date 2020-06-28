@@ -289,11 +289,11 @@ public class GhostController : MonoBehaviour, IMazeEntity
             ScoreController.Instance.SetGhostScore();
             SoundController.Instance.PlayGhostEatenSFX();
         }
-        else if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten)
-        {
-            GameController.Instance.Defeat();
-            SoundController.Instance.PlayDyingMusic();
-        }
+        //else if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten)
+        //{
+        //    GameController.Instance.Defeat();
+        //    SoundController.Instance.PlayDyingMusic();
+        //}
     }
 
     public bool TargetWasOvershot()
