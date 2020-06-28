@@ -290,7 +290,9 @@ public class GhostController : MonoBehaviour, IMazeEntity
             SoundController.Instance.PlayGhostEatenSFX();
         }
         else if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten)
-            Debug.Log("f in the chat");
+        {
+            GameController.Instance.Defeat();
+        }
     }
 
     public bool TargetWasOvershot()

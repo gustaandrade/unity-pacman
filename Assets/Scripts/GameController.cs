@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -36,12 +38,20 @@ public class GameController : MonoBehaviour
     public GameObject LivesPrefab;
     public GameObject LivesContainer;
 
+    private bool _defeated;
+
     private void Awake()
     {
         if (Instance == null)
             Instance = this;
 
-        Lives = 5;
+        Lives = PlayerPrefs.HasKey("Lives") 
+            ? PlayerPrefs.GetInt("Lives") <= 0 
+                ? 5
+                : PlayerPrefs.GetInt("Lives") 
+            : 5;
+
+        Debug.Log(Lives);
 
         Player = MazeAssembler.Instance.GetComponentInChildren<PlayerController>();
         Ghosts = MazeAssembler.Instance.GetComponentsInChildren<GhostController>().ToList();
@@ -93,6 +103,33 @@ public class GameController : MonoBehaviour
         if (!changeTo) GhostsEaten = 0;
     }
 
+    public void Defeat()
+    {
+        if (_defeated) return;
+
+        _defeated = true;
+        Lives--;
+        PlayerPrefs.SetInt("Lives", Lives);
+
+        if (Lives > 0)
+            ScoreController.Instance.SaveLevelScore();
+        else
+            ScoreController.Instance.SetHighScore();
+
+        StartCoroutine(nameof(DefeatCoroutine));
+    }
+
+    private IEnumerator DefeatCoroutine()
+    {
+        Player.GetComponentInChildren<Animator>().SetTrigger("Died");
+
+        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(3);
+        Time.timeScale = 1f;
+
+        SceneManager.LoadScene(0);
+    }
+    
     public Sprite GetFruitSpriteFromData(LevelFruit fruit)
     {
         switch (fruit)

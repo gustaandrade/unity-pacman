@@ -13,6 +13,7 @@ public class ScoreController : MonoBehaviour
     public Text HighScore;
 
     private int _currentScore;
+    private int _highScore;
 
     private MazeTile _fruitTile;
     private SpriteRenderer _fruitSprite;
@@ -21,6 +22,17 @@ public class ScoreController : MonoBehaviour
     {
         if (Instance == null)
             Instance = this;
+
+        _currentScore = PlayerPrefs.HasKey("CurrentScore") 
+            ? PlayerPrefs.GetInt("CurrentScore")
+            : 0;
+
+        _highScore = PlayerPrefs.HasKey("HighScore")
+            ? PlayerPrefs.GetInt("HighScore")
+            : 0;
+
+        LevelScore.text = _currentScore.ToString("000000");
+        HighScore.text = _highScore.ToString("000000");
 
         _fruitTile = MazeAssembler.Instance.FruitParent.GetComponentInChildren<MazeTile>();
         _fruitSprite = _fruitTile.GetComponentInChildren<SpriteRenderer>();
@@ -50,6 +62,14 @@ public class ScoreController : MonoBehaviour
     {
         _currentScore += score;
         LevelScore.text = _currentScore.ToString("000000");
+
+        if (_currentScore > _highScore)
+            HighScore.text = _currentScore.ToString("000000");
+    }
+
+    public void SaveLevelScore()
+    {
+        PlayerPrefs.SetInt("CurrentScore", _currentScore);
     }
 
     public void SetGhostScore()
@@ -78,10 +98,17 @@ public class ScoreController : MonoBehaviour
         StopAllCoroutines();
     }
 
-    public void SetHighScore(int score)
+    public void SetHighScore()
     {
-        HighScore.text = score.ToString("000000");
-        PlayerPrefs.SetInt("HighScore", score);
+        if (PlayerPrefs.HasKey("HighScore"))
+        {
+            if (PlayerPrefs.GetInt("HighScore") < PlayerPrefs.GetInt("CurrentScore"))
+                PlayerPrefs.SetInt("HighScore", PlayerPrefs.GetInt("CurrentScore"));
+        }
+        else
+            PlayerPrefs.SetInt("HighScore", PlayerPrefs.GetInt("CurrentScore"));
+
+        PlayerPrefs.SetInt("CurrentScore", 0);
     }
 
     private void SpawnFruit()
