@@ -42,9 +42,10 @@ public class MazeTile : MonoBehaviour
 
     private void ConsumePellet()
     {
-        if (_mazeTileType == MazeTileType.Pellet || _mazeTileType == MazeTileType.Energizer)
+        if (_mazeTileType == MazeTileType.Pellet 
+            || _mazeTileType == MazeTileType.Energizer 
+            || _mazeTileType == MazeTileType.Fruit)
         {
-            SoundController.Instance.PlayPelletEatenSFX();
             gameObject.SetActive(false);
 
             switch (_mazeTileType)
@@ -52,12 +53,19 @@ public class MazeTile : MonoBehaviour
                 case MazeTileType.Pellet:
                     GameController.Instance.SetPelletsConsumed();
                     ScoreController.Instance.SetLevelScore(10);
+                    SoundController.Instance.PlayPelletEatenSFX();
                     break;
                 
                 case MazeTileType.Energizer:
                     GameController.Instance.SetEnergizersConsumed();
                     ScoreController.Instance.SetLevelScore(50);
+                    SoundController.Instance.PlayPelletEatenSFX();
                     SoundController.Instance.PlayEnergizerMusic();
+                    break;
+
+                case MazeTileType.Fruit:
+                    ScoreController.Instance.SetFruitScore();
+                    SoundController.Instance.PlayFruitEatenSFX();
                     break;
 
                 default: 

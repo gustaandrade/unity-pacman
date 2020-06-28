@@ -37,6 +37,7 @@ public class MazeAssembler : MonoBehaviour
 
     private List<MazeTile> _pelletTiles;
     private List<MazeTile> _energizerTiles;
+    private List<MazeTile> _fruitTiles;
 
     private void Awake()
     {
@@ -57,9 +58,10 @@ public class MazeAssembler : MonoBehaviour
 
         _pelletTiles = PelletsParent.GetComponentsInChildren<MazeTile>().ToList();
         _energizerTiles = EnergizersParent.GetComponentsInChildren<MazeTile>().ToList();
+        _fruitTiles = FruitParent.GetComponentsInChildren<MazeTile>().ToList();
 
         MazeTiles = transform.GetComponentsInChildren<MazeTile>().ToList();
-        AllPelletTiles = _pelletTiles.Concat(_energizerTiles).ToList();
+        AllPelletTiles = _pelletTiles.Concat(_energizerTiles).Concat(_fruitTiles).ToList();
 
         foreach (var tile in MazeTiles)
         {

@@ -6,6 +6,8 @@ public class GhostController : MonoBehaviour, IMazeEntity
 {
     [Space(10), Header("Ghost Variables")] 
     public GhostType GhostType;
+    public GhostMode CurrentGhostMode;
+
     public float NormalSpeed;
     public float FrightenedSpeed;
     public float EatenSpeed;
@@ -28,7 +30,6 @@ public class GhostController : MonoBehaviour, IMazeEntity
     private float _previousMoveSpeed;
     private float _currentReleaseTimer;
 
-    private GhostMode _currentGhostMode;
     private GhostMode _previousGhostMode;
 
     private Animator _spriteAnimator;
@@ -40,7 +41,7 @@ public class GhostController : MonoBehaviour, IMazeEntity
         _player = GameObject.FindGameObjectWithTag("Player");
         _playerController = _player.GetComponent<PlayerController>();
 
-        _currentGhostMode = GhostMode.Scatter;
+        CurrentGhostMode = GhostMode.Scatter;
         GetScatterTile();
 
         var nextTile = Helpers.GetIntersectionTile(transform.localPosition);
@@ -86,7 +87,7 @@ public class GhostController : MonoBehaviour, IMazeEntity
                     _currentIntersectionTile = _currentIntersectionTile.OppositePortal;
                 }
 
-                if (_currentIntersectionTile.IsGhostHouseEntrance && _currentGhostMode == GhostMode.Eaten)
+                if (_currentIntersectionTile.IsGhostHouseEntrance && CurrentGhostMode == GhostMode.Eaten)
                     ChangeGhostMode(_previousGhostMode);
 
                 _targetIntersectionTile = ChooseNextTile();
@@ -100,7 +101,7 @@ public class GhostController : MonoBehaviour, IMazeEntity
 
     private void HandleGhostMode()
     {
-        if (_currentGhostMode != GhostMode.Frightened && _currentGhostMode != GhostMode.Eaten && !IsInGhostHouse)
+        if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten && !IsInGhostHouse)
         {
             _modeChangeTimer += Time.deltaTime;
             NormalSpeed = _previousMoveSpeed;
@@ -108,13 +109,13 @@ public class GhostController : MonoBehaviour, IMazeEntity
             switch (_modeChangeIteration)
             {
                 case 0:
-                    if (_currentGhostMode == GhostMode.Scatter &&
+                    if (CurrentGhostMode == GhostMode.Scatter &&
                         _modeChangeTimer > LevelController.Instance.GetCurrentLevel().GhostTimers[0])
                     {
                         ChangeGhostMode(GhostMode.Chase);
                         _modeChangeTimer = 0f;
                     }
-                    if (_currentGhostMode == GhostMode.Chase &&
+                    if (CurrentGhostMode == GhostMode.Chase &&
                         _modeChangeTimer > LevelController.Instance.GetCurrentLevel().GhostTimers[1])
                     {
                         _modeChangeIteration = 1;
@@ -124,13 +125,13 @@ public class GhostController : MonoBehaviour, IMazeEntity
                     break;
 
                 case 1:
-                    if (_currentGhostMode == GhostMode.Scatter &&
+                    if (CurrentGhostMode == GhostMode.Scatter &&
                         _modeChangeTimer > LevelController.Instance.GetCurrentLevel().GhostTimers[2])
                     {
                         ChangeGhostMode(GhostMode.Chase);
                         _modeChangeTimer = 0f;
                     }
-                    if (_currentGhostMode == GhostMode.Chase &&
+                    if (CurrentGhostMode == GhostMode.Chase &&
                         _modeChangeTimer > LevelController.Instance.GetCurrentLevel().GhostTimers[3])
                     {
                         _modeChangeIteration = 2;
@@ -140,13 +141,13 @@ public class GhostController : MonoBehaviour, IMazeEntity
                     break;
 
                 case 2:
-                    if (_currentGhostMode == GhostMode.Scatter &&
+                    if (CurrentGhostMode == GhostMode.Scatter &&
                         _modeChangeTimer > LevelController.Instance.GetCurrentLevel().GhostTimers[4])
                     {
                         ChangeGhostMode(GhostMode.Chase);
                         _modeChangeTimer = 0f;
                     }
-                    if (_currentGhostMode == GhostMode.Chase &&
+                    if (CurrentGhostMode == GhostMode.Chase &&
                         _modeChangeTimer > LevelController.Instance.GetCurrentLevel().GhostTimers[5])
                     {
                         _modeChangeIteration = 3;
@@ -156,7 +157,7 @@ public class GhostController : MonoBehaviour, IMazeEntity
                     break;
 
                 case 3:
-                    if (_currentGhostMode == GhostMode.Scatter &&
+                    if (CurrentGhostMode == GhostMode.Scatter &&
                         _modeChangeTimer > LevelController.Instance.GetCurrentLevel().GhostTimers[6])
                     {
                         ChangeGhostMode(GhostMode.Chase);
@@ -165,33 +166,33 @@ public class GhostController : MonoBehaviour, IMazeEntity
                     break;
             }
         }
-        else if (_currentGhostMode == GhostMode.Frightened)
+        else if (CurrentGhostMode == GhostMode.Frightened)
             NormalSpeed = FrightenedSpeed;
 
-        else if (_currentGhostMode == GhostMode.Eaten)
+        else if (CurrentGhostMode == GhostMode.Eaten)
             NormalSpeed = EatenSpeed;
     }
 
     public void SetFrightenedModeTo(bool setTo)
     {
-        if (_currentGhostMode == GhostMode.Eaten) return;
+        if (CurrentGhostMode == GhostMode.Eaten) return;
 
         ChangeGhostMode(setTo ? GhostMode.Frightened : _previousGhostMode);
     }
 
     private void ChangeGhostMode(GhostMode mode)
     {
-        if (_currentGhostMode == mode) return;
+        if (CurrentGhostMode == mode) return;
      
-        if (_currentGhostMode != GhostMode.Frightened && _currentGhostMode != GhostMode.Eaten)
-            _previousGhostMode = _currentGhostMode;
+        if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten)
+            _previousGhostMode = CurrentGhostMode;
         
-        _currentGhostMode = mode;
+        CurrentGhostMode = mode;
     }
 
     private Vector3 GetGhostTargetTile()
     {
-        switch (_currentGhostMode)
+        switch (CurrentGhostMode)
         {
             case GhostMode.Scatter:
                 return _scatterTile.transform.localPosition;
@@ -281,9 +282,14 @@ public class GhostController : MonoBehaviour, IMazeEntity
         if (Helpers.GetDistanceBetweenVectors(transform.localPosition, _player.transform.localPosition) > 0.5f)
             return;
 
-        if (_currentGhostMode == GhostMode.Frightened)
+        if (CurrentGhostMode == GhostMode.Frightened)
+        {
             ChangeGhostMode(GhostMode.Eaten);
-        else if (_currentGhostMode != GhostMode.Frightened && _currentGhostMode != GhostMode.Eaten)
+            GameController.Instance.SetGhostsEaten();
+            ScoreController.Instance.SetGhostScore();
+            SoundController.Instance.PlayGhostEatenSFX();
+        }
+        else if (CurrentGhostMode != GhostMode.Frightened && CurrentGhostMode != GhostMode.Eaten)
             Debug.Log("f in the chat");
     }
 
@@ -328,10 +334,10 @@ public class GhostController : MonoBehaviour, IMazeEntity
 
     public void UpdateAnimation()
     {
-        _spriteAnimator.SetBool("Frightened", _currentGhostMode == GhostMode.Frightened);
-        _spriteAnimator.SetBool("FrightenedEnding", _currentGhostMode == GhostMode.Frightened && 
+        _spriteAnimator.SetBool("Frightened", CurrentGhostMode == GhostMode.Frightened);
+        _spriteAnimator.SetBool("FrightenedEnding", CurrentGhostMode == GhostMode.Frightened && 
                                                     GameController.Instance.IsEnergizedTimeEnding);
-        _spriteAnimator.SetBool("Eaten", _currentGhostMode == GhostMode.Eaten);
+        _spriteAnimator.SetBool("Eaten", CurrentGhostMode == GhostMode.Eaten);
 
         switch (_currentMoveDirection)
         {

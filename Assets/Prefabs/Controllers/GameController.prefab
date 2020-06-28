@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4331843006359356129
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4331843006359356131}
+  - component: {fileID: 4331843006359356130}
+  m_Layer: 0
+  m_Name: GameController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4331843006359356131
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4331843006359356129}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4331843006359356130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4331843006359356129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d9ead0a11572748a12d1ca6b3b3727, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Player: {fileID: 0}
+  Ghosts: []
+  Lives: 0
+  GhostsEaten: 0
+  PelletsConsumed: 0
+  EnergizersConsumed: 0
+  TimeConsumed: 0
+  IsEnergized: 0
+  IsEnergizedTimeEnding: 0
+  Cherry: {fileID: -3616295362638947049, guid: cbc92ac39bb3af74cb658de294b2703d, type: 3}
+  Strawberry: {fileID: -5224279544565165861, guid: cbc92ac39bb3af74cb658de294b2703d,
+    type: 3}
+  Orange: {fileID: 9177303291598870318, guid: cbc92ac39bb3af74cb658de294b2703d, type: 3}
+  Apple: {fileID: -1334693059712327664, guid: cbc92ac39bb3af74cb658de294b2703d, type: 3}
+  Melon: {fileID: -7423866982149151991, guid: cbc92ac39bb3af74cb658de294b2703d, type: 3}
+  Ship: {fileID: -5214174631944382222, guid: cbc92ac39bb3af74cb658de294b2703d, type: 3}
+  Bell: {fileID: 3801662866477488878, guid: cbc92ac39bb3af74cb658de294b2703d, type: 3}
+  Key: {fileID: -8011052028574734820, guid: cbc92ac39bb3af74cb658de294b2703d, type: 3}
+  LivesPrefab: {fileID: 8710626048281818539, guid: 211d2dc02fa4d784f9ee0937c96b1a3e,
+    type: 3}
+  LivesContainer: {fileID: 0}

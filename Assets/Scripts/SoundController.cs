@@ -24,6 +24,13 @@ public class SoundController : MonoBehaviour
     [Space(10), Header("Energizer SFXs")] 
     public AudioClip EnergizerSFX;
 
+    [Space(10), Header("Fruit SFXs")] 
+    public AudioClip FruitSFX;
+
+    [Space(10), Header("Ghost SFXs")]
+    public AudioClip GhostSFX;
+    public AudioClip RetreatingSFX;
+
     [Space(10), Header("Audio Sources")]
     public AudioSource MusicSource;
     public AudioSource SFXSource;
@@ -61,6 +68,16 @@ public class SoundController : MonoBehaviour
     {
         _currentMunch = _currentMunch == Munch1SFX ? Munch2SFX : Munch1SFX;
         SFXSource.PlayOneShot(_currentMunch);
+    }
+
+    public void PlayFruitEatenSFX()
+    {
+        SFXSource.PlayOneShot(FruitSFX);
+    }
+
+    public void PlayGhostEatenSFX()
+    {
+        SFXSource.PlayOneShot(GhostSFX);
     }
 
     public void PlayEnergizerMusic()

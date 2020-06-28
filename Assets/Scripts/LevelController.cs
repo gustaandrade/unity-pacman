@@ -1,9 +1,14 @@
 ﻿using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LevelController : MonoBehaviour
 {
     public static LevelController Instance;
+
+    [Space(10), Header("Score Indicators")]
+    public GameObject LevelContainer;
+    public GameObject LevelPrefab;
 
     private LevelsConfiguration _levelsConfiguration;
 
@@ -17,6 +22,12 @@ public class LevelController : MonoBehaviour
         _levelsConfiguration = Resources.Load<LevelsConfiguration>("LevelsConfiguration");
 
         SetCurrentLevel(1);
+
+        foreach (var fruit in GetCurrentLevel().LevelFruits.Where(f => f != LevelFruit.None))
+        {
+            var levelFruit = Instantiate(LevelPrefab, LevelContainer.transform);
+            levelFruit.GetComponent<Image>().sprite = GameController.Instance.GetFruitSpriteFromData(fruit);
+        }
     }
 
     public Level GetCurrentLevel()
