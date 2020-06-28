@@ -11,6 +11,10 @@ public class ScoreController : MonoBehaviour
     public Text LevelScore;
     public Text HighScore;
 
+    [Space(10), Header("Game Variables")]
+    public bool IsEnergized;
+    public bool IsEnergizedTimeEnding;
+
     private int _currentScore;
     private int _pelletsConsumed;
     private int _energizersConsumed;

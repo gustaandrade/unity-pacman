@@ -64,6 +64,8 @@ public class SoundController : MonoBehaviour
 
     public void PlayEnergizerMusic()
     {
+        StopAllCoroutines();
+
         StartCoroutine(nameof(PlayEnergizerMusicCoroutine));
     }
 
@@ -72,9 +74,18 @@ public class SoundController : MonoBehaviour
         MusicSource.clip = EnergizerSFX;
         MusicSource.Play();
 
-        yield return new WaitForSeconds(LevelController.Instance.GetCurrentLevel().NormalEnergizerTime);
+        ScoreController.Instance.IsEnergized = true;
+
+        yield return new WaitForSeconds(LevelController.Instance.GetCurrentLevel().NormalEnergizerTime * 0.75f);
+
+        ScoreController.Instance.IsEnergizedTimeEnding = true;
+
+        yield return new WaitForSeconds(LevelController.Instance.GetCurrentLevel().NormalEnergizerTime * 0.25f);
 
         _currentSiren = _sirenClips[ScoreController.Instance.GetEnergizersConsumed()];
         PlaySirenMusic();
+
+        ScoreController.Instance.IsEnergizedTimeEnding = false;
+        ScoreController.Instance.IsEnergized = false;
     }
 }

@@ -11,6 +11,7 @@ public class GhostController : MonoBehaviour
     [Space(10), Header("Variables")] 
     public Ghost Ghost;
     public float Speed;
+    public float FrightenedSpeed;
     public float ReleaseTime;
     public bool IsInGhostHouse;
 
@@ -39,6 +40,8 @@ public class GhostController : MonoBehaviour
     private List<GhostController> _ghostControllers;
 
     private Animator _spriteAnimator;
+
+    private float _previousMoveSpeed;
 
     private void Awake()
     {
@@ -70,11 +73,14 @@ public class GhostController : MonoBehaviour
         _ghostControllers = MazeAssembler.Instance.gameObject.GetComponentsInChildren<GhostController>().ToList();
 
         _spriteAnimator = GetComponentInChildren<Animator>();
+
+        _previousMoveSpeed = Speed;
     }
 
     private void Update()
     {
         HandleGhostMode();
+        WatchModeChange();
         CheckForReleaseGhost();
         Move();
         UpdateAnimation();
@@ -111,6 +117,8 @@ public class GhostController : MonoBehaviour
         if (_currentGhostMode != GhostMode.Frightened)
         {
             _modeChangeTimer += Time.deltaTime;
+
+            Speed = _previousMoveSpeed;
 
             switch (_modeChangeIteration)
             {
@@ -174,13 +182,22 @@ public class GhostController : MonoBehaviour
         }
         else if (_currentGhostMode == GhostMode.Frightened)
         {
-
+            Speed = FrightenedSpeed;
         }
+    }
+
+    private void WatchModeChange()
+    {
+        ChangeGhostMode(ScoreController.Instance.IsEnergized ? GhostMode.Frightened : _previousGhostMode);
     }
 
     private void ChangeGhostMode(GhostMode mode)
     {
-        _previousGhostMode = _currentGhostMode;
+        if (_currentGhostMode == mode) return;
+     
+        if (_currentGhostMode != GhostMode.Frightened)
+            _previousGhostMode = _currentGhostMode;
+        
         _currentGhostMode = mode;
     }
 
@@ -353,7 +370,10 @@ public class GhostController : MonoBehaviour
 
     private void UpdateAnimation()
     {
-        switch(_currentMoveDirection)
+        _spriteAnimator.SetBool("Frightened", _currentGhostMode == GhostMode.Frightened);
+        _spriteAnimator.SetBool("FrightenedEnding", _currentGhostMode == GhostMode.Frightened && ScoreController.Instance.IsEnergizedTimeEnding);
+
+        switch (_currentMoveDirection)
         {
             case MoveDirection.Up:
                 _spriteAnimator.SetInteger("GhostDirection", 0);
